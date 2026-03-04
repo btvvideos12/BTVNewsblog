@@ -322,7 +322,7 @@ input[type=color]{width:100%;background:rgba(0,0,0,.3);border:1.5px solid rgba(2
       <button class="sz-btn" id="dMinus">&#x2212;</button>
       <span class="sz-val" id="dSzVal">40</span>
       <button class="sz-btn plus" id="dPlus">&#x2B;</button>
-      <input type="range" class="sz-range" id="descSz" min="20" max="80" value="40">
+      <input type="range" class="sz-range" id="descSz" min="20" max="100" value="40">
     </div>
     <!-- FILL BOX TOGGLE -->
     <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);border-radius:10px;">
@@ -470,7 +470,7 @@ input[type=color]{width:100%;background:rgba(0,0,0,.3);border:1.5px solid rgba(2
 </div>
 
 <script>
-var CREDS=[{user:"btv",pass:"btv@2024"}];
+var CREDS=[{user:"admin",pass:"BTV#news2024"}];
 var canvas=document.getElementById("newsCanvas");
 var ctx=canvas.getContext("2d");
 var uploadedImage=null,currentStyle="royal",croppedRegion=null;
@@ -670,26 +670,48 @@ function renderCard(W,H,embedUrl){
   // CONTENT
   var botH=embedUrl?152:124;
   var cTop=imgTop+imgH2+26,cBottom=H-botH-12,availH=cBottom-cTop;
+
+  // Title fit
   var tFit=autoFit(ctx,titleText,cW-12,titleMaxSz,22,true,5);
   var tLH=tFit.sz*1.28,tBH=tLH*tFit.lines;
-  var dMaxL=Math.max(3,Math.floor((availH-tBH-14-gap)/Math.max(1,descMaxSz*1.62)));
+
+  // Available height for description
+  var descAvailH=availH-tBH-14-gap;
+  if(descAvailH<80)descAvailH=80; // minimum space
+
   var fillBoxOn=document.getElementById("fillBoxToggle")&&document.getElementById("fillBoxToggle").checked;
+
   if(fillBoxOn){
-    // Fill mode: find largest font size where ALL desc lines fit in available height
-    var bestSz=20,bestLines=1;
-    for(var testSz=80;testSz>=20;testSz-=1){
+    // FILL MODE: find largest font size that fits ALL text within descAvailH
+    var bestSz=descMaxSz,bestLines=1;
+    for(var testSz=Math.min(descMaxSz,120);testSz>=18;testSz--){
       ctx.font=testSz+"px \"Noto Sans Telugu\",sans-serif";
       var tWords=descText.split(" "),tLine="",tLines=0;
-      for(var tn=0;tn<tWords.length;tn++){var tt=tLine+tWords[tn]+" ";if(ctx.measureText(tt).width>cW-12&&tn>0){tLines++;tLine=tWords[tn]+" ";}else tLine=tt;}
+      for(var tn=0;tn<tWords.length;tn++){
+        var tt=tLine+tWords[tn]+" ";
+        if(ctx.measureText(tt).width>cW-8&&tn>0){tLines++;tLine=tWords[tn]+" ";}
+        else tLine=tt;
+      }
       tLines++;
-      var testH=testSz*1.62*tLines;
-      if(testH<=availH-tBH-14-gap){bestSz=testSz;bestLines=tLines;break;}
+      var lhTest=testSz*1.55;
+      if(lhTest*tLines<=descAvailH){bestSz=testSz;bestLines=tLines;break;}
     }
     dFit={sz:bestSz,lines:bestLines};
   }else{
-    dFit=autoFit(ctx,descText,cW-12,descMaxSz,20,false,Math.max(3,dMaxL));
+    // MANUAL MODE: use slider value directly, no shrinking below manual size
+    // Just measure how many lines at the chosen size
+    var manSz=descMaxSz;
+    ctx.font=manSz+"px \"Noto Sans Telugu\",sans-serif";
+    var mWords=descText.split(" "),mLine="",mLines=0;
+    for(var mn=0;mn<mWords.length;mn++){
+      var mt=mLine+mWords[mn]+" ";
+      if(ctx.measureText(mt).width>cW-8&&mn>0){mLines++;mLine=mWords[mn]+" ";}
+      else mLine=mt;
+    }
+    mLines++;
+    dFit={sz:manSz,lines:mLines};
   }
-  var dLH=dFit.sz*1.62;
+  var dLH=dFit.sz*(fillBoxOn?1.55:1.62);
   var totalH=tBH+14+gap+dLH*dFit.lines;
   var aG=ctx.createLinearGradient(0,cTop,0,cTop+totalH+20);aG.addColorStop(0,accentColor);aG.addColorStop(1,accentColor+"00");
   ctx.fillStyle=aG;ctx.fillRect(padX-18,cTop-6,7,totalH+20);
@@ -698,7 +720,7 @@ function renderCard(W,H,embedUrl){
   var tBtm=cTop+tLH*tLn+8;
   ctx.save();ctx.globalAlpha=.35;var uG=ctx.createLinearGradient(padX,0,padX+280,0);uG.addColorStop(0,accentColor);uG.addColorStop(1,"transparent");ctx.fillStyle=uG;ctx.fillRect(padX,tBtm,280,3);ctx.restore();
   ctx.save();ctx.fillStyle=textColor;ctx.globalAlpha=.9;ctx.shadowColor="rgba(0,0,0,.6)";ctx.shadowBlur=8;
-  drawWrap(ctx,descText,padX,tBtm+gap,cW-12,dLH,false,dFit.sz);ctx.restore();
+  drawWrap(ctx,descText,padX,tBtm+gap,cW-8,dLH,false,dFit.sz);ctx.restore();
 
   // BOTTOM BAR
   var botG=ctx.createLinearGradient(0,H-botH,0,H);botG.addColorStop(0,s.bar+"cc");botG.addColorStop(1,s.bar);
@@ -810,7 +832,7 @@ function wireEvents(){
   document.getElementById("pasteR").onclick=function(){pasteToField("reporterInput");};
   document.getElementById("clearR").onclick=function(){document.getElementById("reporterInput").value="";document.getElementById("designInput").value="";renderCard();};
   makeSzCtrl("tMinus","tPlus","titleSz","tSzVal",20,100,2);
-  makeSzCtrl("dMinus","dPlus","descSz","dSzVal",20,80,2);
+  makeSzCtrl("dMinus","dPlus","descSz","dSzVal",20,100,2);
   makeSzCtrl("gMinus","gPlus","gapSz","gSzVal",4,80,2);
   ["titleColor","hlColor","textColor","accentColor"].forEach(function(id){document.getElementById(id).oninput=function(){renderCard();};});
   document.getElementById("imgUpload").onchange=loadImage;
