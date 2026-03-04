@@ -396,7 +396,7 @@ input[type=color]{width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(255
   <button class="back-btn" id="backBtn">&#x2190; Back</button>
 </div>
 <div class="blog-post" id="blogPostContent"></div>
-<div class="blog-footer">&#xA9; BTV News Digital &#x2022; True News For People</div>
+<div class="blog-footer">&#xA9; BTV News &#x2022; btvmedia.info</div>
 </div>
 
 <!-- ═══ CROP MODAL ═══ -->
@@ -716,9 +716,9 @@ function renderCard(W,H,embedUrl){
     ctx.drawImage(logoImg,W-lw-22,H-botH+(botH-lh)/2-(embedUrl?14:0),lw,lh);ctx.restore();
   }
   ctx.save();ctx.fillStyle="#fff";ctx.font="bold 27px \"Noto Sans Telugu\",sans-serif";ctx.shadowColor="rgba(0,0,0,.5)";ctx.shadowBlur=6;
-  ctx.fillText("\u0c28\u0c3f\u0c1c\u0c2e\u0c48\u0c28 \u0c35\u0c3e\u0c30\u0c4d\u0c24\u0c32\u0c41 \u0c2a\u0c4d\u0c30\u0c1c\u0c32 \u0c15\u0c4b\u0c38\u0c02",24,H-botH+(embedUrl?32:48));
+  ctx.fillText("\u0c28\u0c3f\u0c1c\u0c2e\u0c48\u0c28 \u0c35\u0c3e\u0c30\u0c4d\u0c24\u0c32\u0c41 \u0c15\u0c4b\u0c38\u0c02",24,H-botH+(embedUrl?32:48));
   ctx.globalAlpha=.55;ctx.font="18px \"Noto Sans Telugu\",sans-serif";
-  ctx.fillText("BTV Digital  \u2022  True News For People",24,H-botH+(embedUrl?56:78));ctx.restore();
+  ctx.fillText("BTV News  \u2022  btvmedia.info",24,H-botH+(embedUrl?56:78));ctx.restore();
   for(var i=0;i<5;i++){ctx.save();ctx.globalAlpha=.3;ctx.beginPath();ctx.arc(W-262+i*22,H-28,4,0,Math.PI*2);ctx.fillStyle="#fff";ctx.fill();ctx.restore();}
 
   // LINK strip in image
@@ -791,7 +791,7 @@ function viewPost(id){
     el.innerHTML="<div class='not-found'><h2>404 \u2014 Not Found</h2><p>\u0c08 post \u0c24\u0c4a\u0c32\u0c17\u0c3f\u0c02\u0c1a\u0c2c\u0c21\u0c3f\u0c02\u0c26\u0c3f.</p></div>";
   }else{
     var url=buildUrl(id);
-    el.innerHTML="<img class='blog-card-img' src='"+card.imgData+"' alt='"+escH(card.title)+"'><div class='blog-content'><div class='blog-dline'>"+escH(card.dateDisplay||"")+" &nbsp;\u2022&nbsp; BTV Digital</div><h1 class='blog-post-title'>"+escH(card.title)+"</h1><div class='blog-divider'></div><div class='blog-post-desc'>"+escH(card.desc).replace(/\n/g,"<br>")+"</div></div><div class='blog-share'><h4>\uD83D\uDD17 Share</h4><div class='share-url' id='surl'>"+escH(url)+"<br><small style='opacity:.5'>Click to copy</small></div><div class='share-btns'><button class='wa-btn' id='waBtn'>\uD83D\uDCF1 WhatsApp</button><button id='cpBtn'>\uD83D\uDCCB Copy Link</button><button id='dlBtn'>\u2B07\uFE0F Download</button></div></div>";
+    el.innerHTML="<img class='blog-card-img' src='"+card.imgData+"' alt='"+escH(card.title)+"'><div class='blog-content'><div class='blog-dline'>"+escH(card.dateDisplay||"")+" &nbsp;\u2022&nbsp; BTV News</div><h1 class='blog-post-title'>"+escH(card.title)+"</h1><div class='blog-divider'></div><div class='blog-post-desc'>"+escH(card.desc).replace(/\n/g,"<br>")+"</div></div><div class='blog-share'><h4>\uD83D\uDD17 Share</h4><div class='share-url' id='surl'>"+escH(url)+"<br><small style='opacity:.5'>Click to copy</small></div><div class='share-btns'><button class='wa-btn' id='waBtn'>\uD83D\uDCF1 WhatsApp</button><button id='cpBtn'>\uD83D\uDCCB Copy Link</button><button id='dlBtn'>\u2B07\uFE0F Download</button></div></div>";
     document.getElementById("surl").onclick=function(){copyText(url);};
     document.getElementById("cpBtn").onclick=function(){copyText(url);};
     document.getElementById("waBtn").onclick=function(){window.open("https://wa.me/?text="+encodeURIComponent(card.title+"\n"+url),"_blank");};
