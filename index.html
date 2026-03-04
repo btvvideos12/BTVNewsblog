@@ -324,6 +324,11 @@ input[type=color]{width:100%;background:rgba(0,0,0,.3);border:1.5px solid rgba(2
       <button class="sz-btn plus" id="dPlus">&#x2B;</button>
       <input type="range" class="sz-range" id="descSz" min="20" max="80" value="40">
     </div>
+    <!-- FILL BOX TOGGLE -->
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);border-radius:10px;">
+      <span style="font-size:.76rem;color:#7deba8;font-weight:600;flex:1;">&#x1F4CF; Fill Box — Text size auto-fit</span>
+      <label class="toggle-sw"><input type="checkbox" id="fillBoxToggle"><span class="slider"></span></label>
+    </div>
     <div class="sz-row">
       <span class="sz-lbl">Gap</span>
       <button class="sz-btn" id="gMinus">&#x2212;</button>
@@ -668,7 +673,22 @@ function renderCard(W,H,embedUrl){
   var tFit=autoFit(ctx,titleText,cW-12,titleMaxSz,22,true,5);
   var tLH=tFit.sz*1.28,tBH=tLH*tFit.lines;
   var dMaxL=Math.max(3,Math.floor((availH-tBH-14-gap)/Math.max(1,descMaxSz*1.62)));
-  var dFit=autoFit(ctx,descText,cW-12,descMaxSz,20,false,Math.max(3,dMaxL));
+  var fillBoxOn=document.getElementById("fillBoxToggle")&&document.getElementById("fillBoxToggle").checked;
+  if(fillBoxOn){
+    // Fill mode: find largest font size where ALL desc lines fit in available height
+    var bestSz=20,bestLines=1;
+    for(var testSz=80;testSz>=20;testSz-=1){
+      ctx.font=testSz+"px \"Noto Sans Telugu\",sans-serif";
+      var tWords=descText.split(" "),tLine="",tLines=0;
+      for(var tn=0;tn<tWords.length;tn++){var tt=tLine+tWords[tn]+" ";if(ctx.measureText(tt).width>cW-12&&tn>0){tLines++;tLine=tWords[tn]+" ";}else tLine=tt;}
+      tLines++;
+      var testH=testSz*1.62*tLines;
+      if(testH<=availH-tBH-14-gap){bestSz=testSz;bestLines=tLines;break;}
+    }
+    dFit={sz:bestSz,lines:bestLines};
+  }else{
+    dFit=autoFit(ctx,descText,cW-12,descMaxSz,20,false,Math.max(3,dMaxL));
+  }
   var dLH=dFit.sz*1.62;
   var totalH=tBH+14+gap+dLH*dFit.lines;
   var aG=ctx.createLinearGradient(0,cTop,0,cTop+totalH+20);aG.addColorStop(0,accentColor);aG.addColorStop(1,accentColor+"00");
