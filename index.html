@@ -713,9 +713,31 @@ function renderCard(W,H,embedUrl){
   var cTop=imgTop+imgH2+26,cBottom=H-botH-12,availH=cBottom-cTop;
   var tFit=autoFit(ctx,titleText,cW-12,titleMaxSz,22,true,5);
   var tLH=tFit.sz*1.28,tBH=tLH*tFit.lines;
-  var dMaxL=Math.max(2,Math.floor((availH-tBH-14-gap)/(descMaxSz*1.62)));
-  var dFit=autoFit(ctx,descText,cW-12,descMaxSz,12,false,Math.max(3,dMaxL));
-  var dLH=dFit.sz*1.62;
+  // DESC SIZE: use slider value directly - no shrinking
+  var dAvH=Math.max(80,availH-tBH-14-gap);
+  var fbEl=document.getElementById("fillBoxToggle");
+  var fbOn=fbEl&&fbEl.checked;
+  var dFit;
+  if(fbOn){
+    // FILL MODE: grow text to fill all available space
+    var bSz=20,bLn=1;
+    for(var ts=120;ts>=18;ts--){
+      ctx.font=ts+'px "Noto Sans Telugu",sans-serif';
+      var _w=descText.split(" "),_l="",_n=0;
+      for(var _i=0;_i<_w.length;_i++){var _t=_l+_w[_i]+" ";if(ctx.measureText(_t).width>cW-8&&_i>0){_n++;_l=_w[_i]+" ";}else _l=_t;}
+      _n++;
+      if(ts*1.5*_n<=dAvH){bSz=ts;bLn=_n;break;}
+    }
+    dFit={sz:bSz,lines:bLn};
+  }else{
+    // MANUAL MODE: use EXACTLY the slider value, never shrink
+    ctx.font=descMaxSz+'px "Noto Sans Telugu",sans-serif';
+    var _mw=descText.split(" "),_ml="",_mn=0;
+    for(var _mi=0;_mi<_mw.length;_mi++){var _mt=_ml+_mw[_mi]+" ";if(ctx.measureText(_mt).width>cW-8&&_mi>0){_mn++;_ml=_mw[_mi]+" ";}else _ml=_mt;}
+    _mn++;
+    dFit={sz:descMaxSz,lines:_mn};
+  }
+  var dLH=dFit.sz*1.5;
   var totalH=tBH+14+gap+dLH*dFit.lines;
   var aG=ctx.createLinearGradient(0,cTop,0,cTop+totalH+20);aG.addColorStop(0,accentColor);aG.addColorStop(1,accentColor+"00");
   ctx.fillStyle=aG;ctx.fillRect(padX-18,cTop-6,7,totalH+20);
