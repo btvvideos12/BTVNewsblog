@@ -698,7 +698,7 @@ function renderCard(W,H,embedUrl){
   }
 
   // PHOTO
-  var imgTop=barH+18+rBarH,imgH2=400,imgX=36,imgW=W-72;
+  var imgTop=barH+18+rBarH,imgH2=340,imgX=36,imgW=W-72;
   if(uploadedImage){
     ctx.save();rrPath(ctx,imgX,imgTop,imgW,imgH2,20);ctx.clip();
     ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
@@ -717,11 +717,16 @@ function renderCard(W,H,embedUrl){
   var dAvH=Math.max(80,availH-tBH-14-gap);
   var fbEl=document.getElementById("fillBoxToggle");
   var fbOn=fbEl&&fbEl.checked;
+  // Clip content area so text never overlaps bottom bar
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0,cTop,W,cBottom-cTop);
+  ctx.clip();
   var dFit;
   if(fbOn){
     // FILL MODE: grow text to fill all available space
     var bSz=20,bLn=1;
-    for(var ts=120;ts>=18;ts--){
+    for(var ts=Math.min(descMaxSz,150);ts>=18;ts--){
       ctx.font=ts+'px "Noto Sans Telugu",sans-serif';
       var _w=descText.split(" "),_l="",_n=0;
       for(var _i=0;_i<_w.length;_i++){var _t=_l+_w[_i]+" ";if(ctx.measureText(_t).width>cW-8&&_i>0){_n++;_l=_w[_i]+" ";}else _l=_t;}
@@ -746,7 +751,9 @@ function renderCard(W,H,embedUrl){
   var tBtm=cTop+tLH*tLn+8;
   ctx.save();ctx.globalAlpha=.32;var uG=ctx.createLinearGradient(padX,0,padX+260,0);uG.addColorStop(0,accentColor);uG.addColorStop(1,"transparent");ctx.fillStyle=uG;ctx.fillRect(padX,tBtm,260,3);ctx.restore();
   ctx.save();ctx.fillStyle=textColor;ctx.globalAlpha=.88;ctx.shadowColor="rgba(0,0,0,.5)";ctx.shadowBlur=8;
-  drawWrap(ctx,descText,padX,tBtm+gap,cW-8,dLH,false,dFit.sz);ctx.restore();
+  drawWrap(ctx,descText,padX,tBtm+gap,cW-8,dLH,false,dFit.sz);
+  ctx.restore(); // end content clip
+  ctx.restore(); // end desc style
 
   // BOTTOM BAR
   var botG=ctx.createLinearGradient(0,H-botH,0,H);botG.addColorStop(0,s.bar+"bb");botG.addColorStop(1,s.bar);
@@ -897,12 +904,17 @@ function doDownload(fmt,mode){
 // This runs BEFORE checking auth — so public can always view posts
 function routeUrl(){
   var id=new URLSearchParams(location.search).get("post");
-  if(id){
-    // Load post directly — no login check
-    viewPost(id);
-    return true;
-  }
-  return false;
+  if(!id)return false;
+  // Check localStorage first (admin device)
+  var cards=getCards(),found=false;
+  for(var i=0;i<cards.length;i++){if(cards[i].id===id){found=true;break;}}
+  if(found){viewPost(id);return true;}
+  // Not in localStorage - read card from URL hash (public share link)
+  var hc=getCardFromHash();
+  if(hc){showCardData(hc);return true;}
+  // Nothing found - show 404
+  viewPost(id);
+  return true;
 }
 
 // ═══ WIRE ALL EVENTS ═══
